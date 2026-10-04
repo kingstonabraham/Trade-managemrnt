@@ -1,0 +1,6 @@
+{
+  "name": "Trade Management",
+  "description": "Modern mobile trading journal with Day, Week, and Month analytics, automated P&L tracking, and comprehensive trade logging.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

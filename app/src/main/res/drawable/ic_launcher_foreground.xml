@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Center circular glow -->
+    <path
+        android:fillColor="#1500E5FF"
+        android:pathData="M54,54m-32,0a32,32 0 1,0 64,0a32,32 0 1,0 -64,0" />
+
+    <!-- Trading Candlestick 1 (Left, Pink/Magenta) -->
+    <path
+        android:fillColor="#FF2E93"
+        android:pathData="M35,46h4v18h-4z" />
+    <path
+        android:strokeColor="#FF2E93"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M37,40v30" />
+
+    <!-- Trading Candlestick 2 (Center, Purple/Cyan) -->
+    <path
+        android:fillColor="#8C52FF"
+        android:pathData="M48,40h4v22h-4z" />
+    <path
+        android:strokeColor="#8C52FF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M50,34v34" />
+
+    <!-- Trading Candlestick 3 (Right, Bright Cyan Profit) -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M61,34h4v24h-4z" />
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M63,28v36" />
+
+    <!-- Trading Candlestick 4 (Far Right, High Growth) -->
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M73,30h4v16h-4z" />
+    <path
+        android:strokeColor="#00E676"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M75,26v24" />
+
+    <!-- Upward Trend Line / Dynamic Growth Curve -->
+    <path
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M30,68 L42,56 L55,60 L78,32">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="30"
+                android:startY="68"
+                android:endX="78"
+                android:endY="32"
+                android:type="linear">
+                <item android:color="#FF2E93" android:offset="0.0" />
+                <item android:color="#00E5FF" android:offset="0.6" />
+                <item android:color="#00E676" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Trend Arrow Tip -->
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M78,32 L70,33 L77,40 Z" />
+</vector>

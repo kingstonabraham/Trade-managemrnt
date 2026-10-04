@@ -120,6 +120,42 @@ class TradeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val _isUserLoggedIn = MutableStateFlow(syncManager.isUserLoggedIn())
+    val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn.asStateFlow()
+
+    fun loginAndSyncDatabase(email: String, displayName: String, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            syncManager.setUserEmail(email)
+            syncManager.setUserLoggedIn(true)
+            _isUserLoggedIn.value = true
+
+            // 1. Download existing trades and tasks from database (restores data if logging in from any phone)
+            val downloadedTrades = syncManager.downloadTradesFromCloud()
+            if (downloadedTrades.isNotEmpty()) {
+                repository.insertTrades(downloadedTrades)
+            }
+
+            val downloadedTasks = syncManager.downloadTasksFromCloud()
+            if (downloadedTasks.isNotEmpty()) {
+                repository.insertTasks(downloadedTasks)
+            }
+
+            // 2. Fetch profile summary if exists
+            val profile = syncManager.downloadUserProfile()
+            profile?.get("displayName")?.toString()?.let {
+                if (it.isNotBlank()) updateUserName(it)
+            }
+
+            // 3. Sync local trades up to database
+            val localTrades = allTrades.value
+            val localTasks = allTasks.value
+            val profit = homeSummary.value.totalPnl
+            syncManager.syncUpToCloud(userName.value, localTrades, localTasks, profit)
+
+            onComplete()
+        }
+    }
+
     fun lockApp() {
         passcodeManager.lockApp()
     }

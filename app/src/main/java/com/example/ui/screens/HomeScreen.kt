@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Paid
@@ -202,14 +203,6 @@ fun HomeScreen(
                     }
 
                     Row {
-                        IconButton(onClick = { showCloudSyncDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.CloudSync,
-                                contentDescription = "Cloud Sync",
-                                tint = NeonCyan,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
                         IconButton(onClick = {}) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
@@ -336,45 +329,7 @@ fun HomeScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            // 2.5. Cloud Sync Status Banner (Firebase Free Tier)
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DarkSurfaceElevated)
-                        .border(1.dp, DarkBorderSubtle, RoundedCornerShape(12.dp))
-                        .clickable { showCloudSyncDialog = true }
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.CloudDone,
-                            contentDescription = null,
-                            tint = ProfitGreen,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Firebase Synced: $userEmail",
-                            color = TextSecondary,
-                            fontSize = 11.sp,
-                            maxLines = 1
-                        )
-                    }
-                    Text(
-                        text = "Free Limit",
-                        color = NeonCyan,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             // 3. Hero Card: Net Total P&L
@@ -600,29 +555,11 @@ fun HomeScreen(
             }
         }
 
-        // Cloud Sync Dialog (Firebase Free Limit)
-        if (showCloudSyncDialog) {
-            CloudSyncDialog(
-                currentEmail = userEmail,
-                currentName = userName,
-                syncStatus = syncStatus,
-                onDismiss = { showCloudSyncDialog = false },
-                onSaveEmailAndName = { email, name ->
-                    viewModel.setUserEmail(email)
-                    viewModel.updateUserName(name)
-                },
-                onSyncNow = { viewModel.syncWithCloud() },
-                onLockApp = {
-                    showCloudSyncDialog = false
-                    viewModel.lockApp()
-                }
-            )
-        }
-
         // Edit Profile Dialog
         if (showEditProfileDialog) {
             EditProfileDialog(
                 currentName = userName,
+                accountEmail = userEmail,
                 hasPhoto = profileImagePath != null && File(profileImagePath!!).exists(),
                 onDismiss = { showEditProfileDialog = false },
                 onSelectNewPhoto = {
@@ -636,6 +573,10 @@ fun HomeScreen(
                 onSaveName = { newName ->
                     viewModel.updateUserName(newName)
                     showEditProfileDialog = false
+                },
+                onLockApp = {
+                    showEditProfileDialog = false
+                    viewModel.lockApp()
                 }
             )
         }
@@ -645,18 +586,20 @@ fun HomeScreen(
 @Composable
 fun EditProfileDialog(
     currentName: String,
+    accountEmail: String,
     hasPhoto: Boolean,
     onDismiss: () -> Unit,
     onSelectNewPhoto: () -> Unit,
     onRemovePhoto: () -> Unit,
-    onSaveName: (String) -> Unit
+    onSaveName: (String) -> Unit,
+    onLockApp: () -> Unit
 ) {
     var nameInput by remember { mutableStateOf(currentName) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Edit Profile", color = TextPrimary, fontWeight = FontWeight.Bold)
+            Text("Trader Profile", color = TextPrimary, fontWeight = FontWeight.Bold)
         },
         text = {
             Column {
@@ -694,7 +637,7 @@ fun EditProfileDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "Your Name",
@@ -712,6 +655,33 @@ fun EditProfileDialog(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Account Email",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = accountEmail,
+                    color = NeonCyan,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                TextButton(
+                    onClick = onLockApp,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(Icons.Default.Lock, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Lock App With Passcode", color = TextMuted, fontSize = 12.sp)
+                }
             }
         },
         confirmButton = {

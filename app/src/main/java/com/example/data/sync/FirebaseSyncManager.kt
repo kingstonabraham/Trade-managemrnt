@@ -207,6 +207,61 @@ class FirebaseSyncManager(private val context: Context) {
         }
     }
 
+    /**
+     * Downloads existing tasks from the cloud database.
+     */
+    suspend fun downloadTasksFromCloud(): List<TradingTaskEntity> = withContext(Dispatchers.IO) {
+        try {
+            val email = _userEmail.value.ifBlank { return@withContext emptyList() }
+            val docKey = getDocumentKey(email)
+            val snapshot = firestore.collection("users")
+                .document(docKey)
+                .collection("tasks")
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { doc ->
+                try {
+                    TradingTaskEntity(
+                        id = doc.getLong("id") ?: doc.id.toLongOrNull() ?: 0L,
+                        title = doc.getString("title") ?: "Task",
+                        category = doc.getString("category") ?: "Routine",
+                        createdDate = doc.getString("createdDate") ?: "",
+                        isCompleted = doc.getBoolean("isCompleted") ?: false,
+                        completedDate = doc.getString("completedDate")
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FirebaseSync", "Failed to download tasks: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /**
+     * Downloads user profile summary from the database.
+     */
+    suspend fun downloadUserProfile(): Map<String, Any>? = withContext(Dispatchers.IO) {
+        try {
+            val email = _userEmail.value.ifBlank { return@withContext null }
+            val docKey = getDocumentKey(email)
+            val doc = firestore.collection("users").document(docKey).get().await()
+            if (doc.exists()) doc.data else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return prefs.getBoolean("user_logged_in", false)
+    }
+
+    fun setUserLoggedIn(loggedIn: Boolean) {
+        prefs.edit().putBoolean("user_logged_in", loggedIn).apply()
+    }
+
     companion object {
         private const val KEY_USER_EMAIL = "firebase_user_email"
 

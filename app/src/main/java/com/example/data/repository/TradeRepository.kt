@@ -39,6 +39,8 @@ class TradeRepository(
 
     suspend fun insertTask(task: TradingTaskEntity): Long = taskDao.insertTask(task)
 
+    suspend fun insertTasks(tasks: List<TradingTaskEntity>) = taskDao.insertTasks(tasks)
+
     suspend fun updateTask(task: TradingTaskEntity) = taskDao.updateTask(task)
 
     suspend fun deleteTask(task: TradingTaskEntity) = taskDao.deleteTask(task)

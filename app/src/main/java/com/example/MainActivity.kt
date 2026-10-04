@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.components.TradeBottomNav
+import com.example.ui.screens.AccountLoginScreen
 import com.example.ui.screens.AddEditTradeScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.PasscodeMode
@@ -51,20 +52,32 @@ class MainActivity : ComponentActivity() {
 fun TradeApp(viewModel: TradeViewModel = viewModel()) {
     val isAppLocked by viewModel.isAppLocked.collectAsStateWithLifecycle()
     val hasPasscode = remember(isAppLocked) { viewModel.passcodeManager.hasPasscode() }
+    val isUserLoggedIn by viewModel.isUserLoggedIn.collectAsStateWithLifecycle()
 
-    // 1. Mandatory 4-Digit Passcode Gate
+    // 1. Mandatory 4-Digit Passcode Gate (Step 1 Setup -> Step 2 Confirm -> GO to login)
     if (!hasPasscode) {
         PasscodeScreen(
             mode = PasscodeMode.SETUP,
             passcodeManager = viewModel.passcodeManager,
             onSuccess = {
                 viewModel.unlockApp()
+            }
+        )
+        return
+    }
+
+    // 2. User Email & Database Login Gate (Restores data from any phone)
+    if (!isUserLoggedIn) {
+        AccountLoginScreen(
+            viewModel = viewModel,
+            onLoginSuccess = {
                 viewModel.syncWithCloud()
             }
         )
         return
     }
 
+    // 3. Subsequent launches Passcode Unlock Gate
     if (isAppLocked) {
         PasscodeScreen(
             mode = PasscodeMode.UNLOCK,

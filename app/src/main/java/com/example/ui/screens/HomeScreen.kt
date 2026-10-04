@@ -32,6 +32,8 @@ import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.BusinessCenter
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.MoreVert
@@ -40,6 +42,7 @@ import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SwapHoriz
+import com.example.ui.components.CloudSyncDialog
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -104,8 +107,11 @@ fun HomeScreen(
 
     val userName by viewModel.userName.collectAsStateWithLifecycle()
     val profileImagePath by viewModel.profileImagePath.collectAsStateWithLifecycle()
+    val userEmail by viewModel.userEmail.collectAsStateWithLifecycle()
+    val syncStatus by viewModel.syncStatus.collectAsStateWithLifecycle()
 
     var showEditProfileDialog by remember { mutableStateOf(false) }
+    var showCloudSyncDialog by remember { mutableStateOf(false) }
 
     // Zero-permission Android Photo Picker
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -196,6 +202,14 @@ fun HomeScreen(
                     }
 
                     Row {
+                        IconButton(onClick = { showCloudSyncDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.CloudSync,
+                                contentDescription = "Cloud Sync",
+                                tint = NeonCyan,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                         IconButton(onClick = {}) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
@@ -322,7 +336,45 @@ fun HomeScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // 2.5. Cloud Sync Status Banner (Firebase Free Tier)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DarkSurfaceElevated)
+                        .border(1.dp, DarkBorderSubtle, RoundedCornerShape(12.dp))
+                        .clickable { showCloudSyncDialog = true }
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.CloudDone,
+                            contentDescription = null,
+                            tint = ProfitGreen,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Firebase Synced: $userEmail",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            maxLines = 1
+                        )
+                    }
+                    Text(
+                        text = "Free Limit",
+                        color = NeonCyan,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
             // 3. Hero Card: Net Total P&L
@@ -546,6 +598,25 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
+        }
+
+        // Cloud Sync Dialog (Firebase Free Limit)
+        if (showCloudSyncDialog) {
+            CloudSyncDialog(
+                currentEmail = userEmail,
+                currentName = userName,
+                syncStatus = syncStatus,
+                onDismiss = { showCloudSyncDialog = false },
+                onSaveEmailAndName = { email, name ->
+                    viewModel.setUserEmail(email)
+                    viewModel.updateUserName(name)
+                },
+                onSyncNow = { viewModel.syncWithCloud() },
+                onLockApp = {
+                    showCloudSyncDialog = false
+                    viewModel.lockApp()
+                }
+            )
         }
 
         // Edit Profile Dialog

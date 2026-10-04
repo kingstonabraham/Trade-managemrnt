@@ -22,6 +22,8 @@ class TradeRepository(
 
     suspend fun insertTrade(trade: Trade): Long = tradeDao.insertTrade(trade)
 
+    suspend fun insertTrades(trades: List<Trade>) = tradeDao.insertTrades(trades)
+
     suspend fun updateTrade(trade: Trade) = tradeDao.updateTrade(trade)
 
     suspend fun deleteTrade(trade: Trade) = tradeDao.deleteTrade(trade)

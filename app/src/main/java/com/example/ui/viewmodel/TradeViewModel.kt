@@ -87,9 +87,58 @@ class TradeViewModel(application: Application) : AndroidViewModel(application) {
         profilePrefs.edit().remove("profile_image_path").apply()
     }
 
+    // Security & Passcode
+    val passcodeManager = com.example.util.PasscodeManager.getInstance(application)
+    val isAppLocked: StateFlow<Boolean> = passcodeManager.isLocked
+
+    // Firebase Cloud Sync
+    val syncManager = com.example.data.sync.FirebaseSyncManager.getInstance(application)
+    val userEmail: StateFlow<String> = syncManager.userEmail
+    val syncStatus: StateFlow<com.example.data.sync.SyncStatus> = syncManager.syncStatus
+
+    fun setUserEmail(email: String) {
+        syncManager.setUserEmail(email)
+        syncWithCloud()
+    }
+
+    fun syncWithCloud() {
+        viewModelScope.launch {
+            val trades = allTrades.value
+            val tasks = allTasks.value
+            val overallProfit = homeSummary.value.totalPnl
+            val name = userName.value
+            syncManager.syncUpToCloud(name, trades, tasks, overallProfit)
+        }
+    }
+
+    fun pullFromCloud() {
+        viewModelScope.launch {
+            val downloaded = syncManager.downloadTradesFromCloud()
+            if (downloaded.isNotEmpty()) {
+                repository.insertTrades(downloaded)
+            }
+        }
+    }
+
+    fun lockApp() {
+        passcodeManager.lockApp()
+    }
+
+    fun unlockApp() {
+        passcodeManager.unlockWithoutCheckForFirstSetup()
+    }
+
     init {
         val database = TradeDatabase.getDatabase(application, viewModelScope)
         repository = TradeRepository(database.tradeDao(), database.taskDao())
+
+        // Initial sync check: pull from cloud if local trades are empty
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            if (repository.getTradeCount() == 0) {
+                pullFromCloud()
+            }
+        }
     }
 
     // Navigation State
@@ -354,6 +403,7 @@ class TradeViewModel(application: Application) : AndroidViewModel(application) {
             }
             _currentScreen.value = ScreenDestination.MAIN_CONTAINER
             _editingTrade.value = null
+            syncWithCloud()
             onSuccess()
         }
     }
@@ -363,6 +413,7 @@ class TradeViewModel(application: Application) : AndroidViewModel(application) {
             repository.deleteTradeById(tradeId)
             _currentScreen.value = ScreenDestination.MAIN_CONTAINER
             _selectedTradeId.value = null
+            syncWithCloud()
             onSuccess()
         }
     }

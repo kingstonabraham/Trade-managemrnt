@@ -16,12 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.components.TradeBottomNav
 import com.example.ui.screens.AddEditTradeScreen
 import com.example.ui.screens.HomeScreen
+import com.example.ui.screens.PasscodeMode
+import com.example.ui.screens.PasscodeScreen
 import com.example.ui.screens.TasksScreen
 import com.example.ui.screens.TradeDetailsScreen
 import com.example.ui.screens.TradeManagementScreen
@@ -46,6 +49,34 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TradeApp(viewModel: TradeViewModel = viewModel()) {
+    val isAppLocked by viewModel.isAppLocked.collectAsStateWithLifecycle()
+    val hasPasscode = remember(isAppLocked) { viewModel.passcodeManager.hasPasscode() }
+
+    // 1. Mandatory 4-Digit Passcode Gate
+    if (!hasPasscode) {
+        PasscodeScreen(
+            mode = PasscodeMode.SETUP,
+            passcodeManager = viewModel.passcodeManager,
+            onSuccess = {
+                viewModel.unlockApp()
+                viewModel.syncWithCloud()
+            }
+        )
+        return
+    }
+
+    if (isAppLocked) {
+        PasscodeScreen(
+            mode = PasscodeMode.UNLOCK,
+            passcodeManager = viewModel.passcodeManager,
+            onSuccess = {
+                viewModel.unlockApp()
+                viewModel.syncWithCloud()
+            }
+        )
+        return
+    }
+
     val currentScreen by viewModel.currentScreen.collectAsStateWithLifecycle()
     val currentTab by viewModel.currentTab.collectAsStateWithLifecycle()
     val selectedTradeId by viewModel.selectedTradeId.collectAsStateWithLifecycle()

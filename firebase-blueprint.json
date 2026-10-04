@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile holding trader credentials, email, and synced metrics",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User email address used for syncing"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Trader display name"
+        },
+        "overallProfit": {
+          "type": "number",
+          "description": "Overall net profit synced across trades"
+        },
+        "totalTrades": {
+          "type": "number",
+          "description": "Total count of trades executed"
+        },
+        "lastSynced": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last sync operation"
+        }
+      },
+      "required": ["email", "displayName"]
+    },
+    "TradeItem": {
+      "title": "TradeItem",
+      "description": "A single trade journal entry synced to cloud",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "Local ID of the trade"
+        },
+        "stockName": {
+          "type": "string",
+          "description": "Stock symbol or ticker"
+        },
+        "tradeType": {
+          "type": "string",
+          "description": "BUY or SELL"
+        },
+        "marketSegment": {
+          "type": "string",
+          "description": "Asset class (Indian Stocks, US Stocks, Forex, etc.)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Number of shares or lots"
+        },
+        "entryPrice": {
+          "type": "number",
+          "description": "Entry execution price"
+        },
+        "exitPrice": {
+          "type": "number",
+          "description": "Exit execution price"
+        },
+        "leverage": {
+          "type": "number",
+          "description": "Leverage factor applied (1 to 100)"
+        },
+        "entryDate": {
+          "type": "string",
+          "description": "Date of entry (YYYY-MM-DD)"
+        },
+        "exitDate": {
+          "type": "string",
+          "description": "Date of exit (YYYY-MM-DD)"
+        },
+        "status": {
+          "type": "string",
+          "description": "CLOSED or OPEN"
+        },
+        "grossPnl": {
+          "type": "number",
+          "description": "Gross P&L before charges"
+        },
+        "netPnl": {
+          "type": "number",
+          "description": "Net P&L after charges"
+        },
+        "brokerageCharges": {
+          "type": "number",
+          "description": "Total fees, taxes, and brokerage"
+        },
+        "investedAmount": {
+          "type": "number",
+          "description": "Capital invested / margin required"
+        },
+        "stopLoss": {
+          "type": "number",
+          "description": "Stop loss price"
+        },
+        "targetPrice": {
+          "type": "number",
+          "description": "Target take profit price"
+        },
+        "setupNotes": {
+          "type": "string",
+          "description": "Trading setup rationale and notes"
+        }
+      },
+      "required": ["stockName", "tradeType", "entryPrice", "exitPrice", "quantity"]
+    },
+    "TaskItem": {
+      "title": "TaskItem",
+      "description": "A daily trading task or rule synced to cloud",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number",
+          "description": "Local ID of the task"
+        },
+        "title": {
+          "type": "string",
+          "description": "Task description"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the task (YYYY-MM-DD)"
+        },
+        "isCompleted": {
+          "type": "boolean",
+          "description": "Whether the task is completed"
+        }
+      },
+      "required": ["title", "date", "isCompleted"]
+    }
+  },
+  "firestore": {
+    "/users/{userEmail}": {
+      "schema": "UserProfile",
+      "description": "Holds the user's profile and overall trading account metrics"
+    },
+    "/users/{userEmail}/trades/{tradeId}": {
+      "schema": "TradeItem",
+      "description": "User's synced trade journal entries"
+    },
+    "/users/{userEmail}/tasks/{taskId}": {
+      "schema": "TaskItem",
+      "description": "User's synced daily tasks and discipline checklist"
+    }
+  }
+}

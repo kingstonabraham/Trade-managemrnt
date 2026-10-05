@@ -12,6 +12,9 @@ class PasscodeManager(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("trading_passcode_prefs", Context.MODE_PRIVATE)
 
+    private val _hasPasscode = MutableStateFlow(hasPasscode())
+    val hasPasscode: StateFlow<Boolean> = _hasPasscode.asStateFlow()
+
     private val _isLocked = MutableStateFlow(hasPasscode())
     val isLocked: StateFlow<Boolean> = _isLocked.asStateFlow()
 
@@ -32,7 +35,8 @@ class PasscodeManager(context: Context) {
     fun setPasscode(passcode: String): Boolean {
         if (passcode.length != 4 || !passcode.all { it.isDigit() }) return false
         val hash = hashPasscode(passcode)
-        prefs.edit().putString(KEY_PASSCODE_HASH, hash).apply()
+        prefs.edit().putString(KEY_PASSCODE_HASH, hash).commit()
+        _hasPasscode.value = true
         _isLocked.value = false
         return true
     }

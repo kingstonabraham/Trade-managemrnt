@@ -33,6 +33,9 @@ class FirebaseSyncManager(private val context: Context) {
     )
     val userEmail: StateFlow<String> = _userEmail.asStateFlow()
 
+    private val _isUserLoggedIn = MutableStateFlow(prefs.getBoolean("user_logged_in", false))
+    val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn.asStateFlow()
+
     private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
 
@@ -259,7 +262,8 @@ class FirebaseSyncManager(private val context: Context) {
     }
 
     fun setUserLoggedIn(loggedIn: Boolean) {
-        prefs.edit().putBoolean("user_logged_in", loggedIn).apply()
+        prefs.edit().putBoolean("user_logged_in", loggedIn).commit()
+        _isUserLoggedIn.value = loggedIn
     }
 
     companion object {

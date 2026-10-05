@@ -50,8 +50,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TradeApp(viewModel: TradeViewModel = viewModel()) {
+    val hasPasscode by viewModel.hasPasscode.collectAsStateWithLifecycle()
     val isAppLocked by viewModel.isAppLocked.collectAsStateWithLifecycle()
-    val hasPasscode = remember(isAppLocked) { viewModel.passcodeManager.hasPasscode() }
     val isUserLoggedIn by viewModel.isUserLoggedIn.collectAsStateWithLifecycle()
 
     // 1. Mandatory 4-Digit Passcode Gate (Step 1 Setup -> Step 2 Confirm -> GO to login)

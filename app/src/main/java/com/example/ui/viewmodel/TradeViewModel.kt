@@ -89,12 +89,14 @@ class TradeViewModel(application: Application) : AndroidViewModel(application) {
 
     // Security & Passcode
     val passcodeManager = com.example.util.PasscodeManager.getInstance(application)
+    val hasPasscode: StateFlow<Boolean> = passcodeManager.hasPasscode
     val isAppLocked: StateFlow<Boolean> = passcodeManager.isLocked
 
     // Firebase Cloud Sync
     val syncManager = com.example.data.sync.FirebaseSyncManager.getInstance(application)
     val userEmail: StateFlow<String> = syncManager.userEmail
     val syncStatus: StateFlow<com.example.data.sync.SyncStatus> = syncManager.syncStatus
+    val isUserLoggedIn: StateFlow<Boolean> = syncManager.isUserLoggedIn
 
     fun setUserEmail(email: String) {
         syncManager.setUserEmail(email)
@@ -120,14 +122,10 @@ class TradeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private val _isUserLoggedIn = MutableStateFlow(syncManager.isUserLoggedIn())
-    val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn.asStateFlow()
-
     fun loginAndSyncDatabase(email: String, displayName: String, onComplete: () -> Unit) {
         viewModelScope.launch {
             syncManager.setUserEmail(email)
             syncManager.setUserLoggedIn(true)
-            _isUserLoggedIn.value = true
 
             // 1. Download existing trades and tasks from database (restores data if logging in from any phone)
             val downloadedTrades = syncManager.downloadTradesFromCloud()
